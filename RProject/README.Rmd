@@ -1,0 +1,164 @@
+# RProject
+
+# Part 1
+
+## Prep workspace
+```{r}
+if (!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+if (!require("ggplot2")) install.packages("ggplot2")
+library(ggplot2)
+if (!require("gtools")) install.packages("gtools")
+library(gtools)
+```
+
+##Read in files
+```{r}
+SNP <- read_tsv("https://raw.githubusercontent.com/EEOB-BioData/BCB546X-Fall2019/master/assignments/UNIX_Assignment/snp_position.txt")
+Fang <- read_tsv("https://raw.githubusercontent.com/EEOB-BioData/BCB546X-Fall2019/master/assignments/UNIX_Assignment/fang_et_al_genotypes.txt")
+```
+
+##View files
+```{r}
+view(SNP)
+view(Fang)
+```
+
+#Prep directories for each species
+```{r}
+dir.create("Maize")
+dir.create("Teosinte")
+dir.create("graphs")
+```
+
+##Keep only columns 1, 3, and 4 from SNP data
+```{r}
+snippedSNP <- SNP[c(1,3,4)]
+```
+
+##Create separate files for Maize and Teosinte based on group name, and remove extra columns
+```{r}
+Teo <- filter(Fang, Group == "ZMPJA" | Group == "ZMPIL" | Group == "ZMPBA")
+Maize <- filter(Fang, Group == "ZMMMR" | Group == "ZMMLR" | Group == "ZMMIL")
+cut_Teo <- Teo[,-(1:3)]
+cut_Maize <- Maize[,-(1:3)]
+```
+
+##Transposed Teosinte and Maize files. Add new columns for SNP ID
+```{r}
+tTeo <- as.data.frame(t(cut_Teo))
+tMaize <- as.data.frame(t(cut_Maize))
+tTeo <- rownames_to_column(tTeo,"SNP_ID")
+tMaize <- rownames_to_column(tMaize,"SNP_ID")
+```
+
+##Merged SNP file with the Teosinte and Maize files
+```{r}
+mTeo <- merge(snippedSNP,tTeo, by.x = "SNP_ID", by.y = "SNP_ID")
+mMaize <- merge(snippedSNP, tMaize, by.x = "SNP_ID", by.y = "SNP_ID")
+```
+
+##Ordered files by chromosome file, with ties broken by position number. There seem to have been problems when sorting by position
+```{r}
+mTeo <- mTeo[order(mTeo$Chromosome, mTeo$Position, decreasing = FALSE),]
+```
+
+##Creates new files for each Teosinte Chromosome. I wanted to write a for loop, but couldn't get it right.
+```{r}
+filter(mTeo, Chromosome == 1) %>% write_csv(path = "Teosinte/TEO_CHR1_inc.csv")
+filter(mTeo, Chromosome == 2) %>% write_csv(path = "Teosinte/TEO_CHR2_inc.csv")
+filter(mTeo, Chromosome == 3) %>% write_csv(path = "Teosinte/TEO_CHR3_inc.csv")
+filter(mTeo, Chromosome == 4) %>% write_csv(path = "Teosinte/TEO_CHR4_inc.csv")
+filter(mTeo, Chromosome == 5) %>% write_csv(path = "Teosinte/TEO_CHR5_inc.csv")
+filter(mTeo, Chromosome == 6) %>% write_csv(path = "Teosinte/TEO_CHR6_inc.csv")
+filter(mTeo, Chromosome == 7) %>% write_csv(path = "Teosinte/TEO_CHR7_inc.csv")
+filter(mTeo, Chromosome == 8) %>% write_csv(path = "Teosinte/TEO_CHR8_inc.csv")
+filter(mTeo, Chromosome == 9) %>% write_csv(path = "Teosinte/TEO_CHR9_inc.csv")
+filter(mTeo, Chromosome == 10) %>% write_csv(path = "Teosinte/TEO_CHR10_inc.csv")
+```
+
+#Repeat sorting process for Maize
+```{r}
+mMaize <- mMaize[order(mMaize$Chromosome, mMaize$Position, decreasing = F),]
+```
+
+##Repeat file splicing for Maize
+```{r}
+filter(mMaize, Chromosome == 1) %>% write_csv(path = "Maize/MAIZE_CHR1_inc.csv")
+filter(mMaize, Chromosome == 2) %>% write_csv(path = "Maize/MAIZE_CHR2_inc.csv")
+filter(mMaize, Chromosome == 3) %>% write_csv(path = "Maize/MAIZE_CHR3_inc.csv")
+filter(mMaize, Chromosome == 4) %>% write_csv(path = "Maize/MAIZE_CHR4_inc.csv")
+filter(mMaize, Chromosome == 5) %>% write_csv(path = "Maize/MAIZE_CHR5_inc.csv")
+filter(mMaize, Chromosome == 6) %>% write_csv(path = "Maize/MAIZE_CHR6_inc.csv")
+filter(mMaize, Chromosome == 7) %>% write_csv(path = "Maize/MAIZE_CHR7_inc.csv")
+filter(mMaize, Chromosome == 8) %>% write_csv(path = "Maize/MAIZE_CHR8_inc.csv")
+filter(mMaize, Chromosome == 9) %>% write_csv(path = "Maize/MAIZE_CHR9_inc.csv")
+filter(mMaize, Chromosome == 10) %>% write_csv(path = "Maize/MAIZE_CHR10_inc.csv")
+```
+
+##Sorted maize in decreasing order. I found the find and replace code on Slack; I don't know how it works.
+```{r}
+mMaize <- mMaize[order(mMaize$Chromosome,mMaize$Position, decreasing = T),]
+mMaize <- apply(X = mMaize, MARGIN = 2, FUN = as.character)
+mMaize[mMaize == "?/?"] <- "-/-"
+mMaize <- as.data.frame(mMaize)
+```
+
+##repeat file splicing for descended sorting
+```{r}
+filter(mMaize, Chromosome == 1) %>% write_csv(path = "Maize/MAIZE_CHR1_dec.csv")
+filter(mMaize, Chromosome == 2) %>% write_csv(path = "Maize/MAIZE_CHR2_dec.csv")
+filter(mMaize, Chromosome == 3) %>% write_csv(path = "Maize/MAIZE_CHR3_dec.csv")
+filter(mMaize, Chromosome == 4) %>% write_csv(path = "Maize/MAIZE_CHR4_dec.csv")
+filter(mMaize, Chromosome == 5) %>% write_csv(path = "Maize/MAIZE_CHR5_dec.csv")
+filter(mMaize, Chromosome == 6) %>% write_csv(path = "Maize/MAIZE_CHR6_dec.csv")
+filter(mMaize, Chromosome == 7) %>% write_csv(path = "Maize/MAIZE_CHR7_dec.csv")
+filter(mMaize, Chromosome == 8) %>% write_csv(path = "Maize/MAIZE_CHR8_dec.csv")
+filter(mMaize, Chromosome == 9) %>% write_csv(path = "Maize/MAIZE_CHR9_dec.csv")
+filter(mMaize, Chromosome == 10) %>% write_csv(path = "Maize/MAIZE_CHR10_inc.csv")
+```
+
+## Repeat resorting for teosinte and replace characters
+```{r}
+mTeo <- mTeo[order(mTeo$Chromosome,mTeo$Position, decreasing = T),]
+mTeo <- apply(X = mTeo, MARGIN = 2, FUN = as.character)
+mTeo[mTeo == "?/?"] <- "-/-"
+mTeo <- as.data.frame(mTeo)
+```
+
+##Repeat splicing for descending teosinte
+```{r}
+filter(mTeo, Chromosome == 1) %>% write_csv(path = "Teosinte/TEO_CHR1_dec.csv")
+filter(mTeo, Chromosome == 2) %>% write_csv(path = "Teosinte/TEO_CHR2_dec.csv")
+filter(mTeo, Chromosome == 3) %>% write_csv(path = "Teosinte/TEO_CHR3_dec.csv")
+filter(mTeo, Chromosome == 4) %>% write_csv(path = "Teosinte/TEO_CHR4_dec.csv")
+filter(mTeo, Chromosome == 5) %>% write_csv(path = "Teosinte/TEO_CHR5_dec.csv")
+filter(mTeo, Chromosome == 6) %>% write_csv(path = "Teosinte/TEO_CHR6_dec.csv")
+filter(mTeo, Chromosome == 7) %>% write_csv(path = "Teosinte/TEO_CHR7_dec.csv")
+filter(mTeo, Chromosome == 8) %>% write_csv(path = "Teosinte/TEO_CHR8_dec.csv")
+filter(mTeo, Chromosome == 9) %>% write_csv(path = "Teosinte/TEO_CHR9_dec.csv")
+filter(mTeo, Chromosome == 10) %>% write_csv(path = "Teosinte/TEO_CHR10_inc.csv")
+```
+
+#Part 2
+
+##Add reshape2 to the environment
+```{r}
+library(reshape2)
+```
+
+##Melt maize and teosinte files. I don't know what this does.
+```{r}
+melt(mMaize, na.rm = T,)
+melt(mTeo, na.rm = T,)
+```
+
+##Creates plots for maize and teosinte data based on SNP count per chromosome. Both plots look the same. I think I did something wrong. Saves images to "Graphs" directory
+```{r}
+ggplot(data = mMaize) + geom_bar(mapping = aes(x = mMaize$Chromosome)) + xlab(label = "Chromosome") + ylab(label = "Number of SNPs")
+ggsave(filename = "graphs/MaizeSNPs.png")
+ggplot(data = mTeo) + geom_bar(mapping = aes(x = mTeo$Chromosome)) + xlab(label = "Chromosome") +ylab(label = "Number of SNPs")
+ggsave(filename = "graphs/TeosinteSNPs.png")
+```
+
+###I couldn't figure out the rest of the plotting
