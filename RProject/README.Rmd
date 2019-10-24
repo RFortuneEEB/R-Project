@@ -58,12 +58,12 @@ mTeo <- merge(snippedSNP,tTeo, by.x = "SNP_ID", by.y = "SNP_ID")
 mMaize <- merge(snippedSNP, tMaize, by.x = "SNP_ID", by.y = "SNP_ID")
 ```
 
-##Ordered files by chromosome file, with ties broken by position number. There seem to have been problems when sorting by position
+##Ordered files by chromosome file, with ties broken by position number. 
 ```{r}
 mTeo <- mTeo[order(mTeo$Chromosome, mTeo$Position, decreasing = FALSE),]
 ```
 
-##Creates new files for each Teosinte Chromosome. I wanted to write a for loop, but couldn't get it right.
+##Creates new files for each Teosinte Chromosome
 ```{r}
 filter(mTeo, Chromosome == 1) %>% write_csv(path = "Teosinte/TEO_CHR1_inc.csv")
 filter(mTeo, Chromosome == 2) %>% write_csv(path = "Teosinte/TEO_CHR2_inc.csv")
@@ -96,7 +96,7 @@ filter(mMaize, Chromosome == 9) %>% write_csv(path = "Maize/MAIZE_CHR9_inc.csv")
 filter(mMaize, Chromosome == 10) %>% write_csv(path = "Maize/MAIZE_CHR10_inc.csv")
 ```
 
-##Sorted maize in decreasing order. I found the find and replace code on Slack; I don't know how it works.
+##Sorted maize in decreasing order.
 ```{r}
 mMaize <- mMaize[order(mMaize$Chromosome,mMaize$Position, decreasing = T),]
 mMaize <- apply(X = mMaize, MARGIN = 2, FUN = as.character)
