@@ -147,13 +147,20 @@ filter(mTeo, Chromosome == 10) %>% write_csv(path = "Teosinte/TEO_CHR10_inc.csv"
 library(reshape2)
 ```
 
-##Melt maize and teosinte files. I don't know what this does.
+##Melt the original Fang file
 ```{r}
-melt(mMaize, na.rm = T,)
-melt(mTeo, na.rm = T,)
+zygosity_unmelted <- filter(Fang, Group == "ZMMIL" | Group == "ZMMLR" | Group == "ZMMMR" | Group == "ZMPBA" | Group == "ZMPIL" | Group == "ZMPJA")
+zygo <- melt(zygosity_unmelted, measure.vars = colnames(Fang)[4:986])
+colnames(zygo)[4:5] <- c("SNP_ID", "Genotype")
+colnames(zygo)
 ```
 
-##Creates plots for maize and teosinte data based on SNP count per chromosome. Both plots look the same. I think I did something wrong. Saves images to "Graphs" directory
+```{r}
+zygo[zygo == "?/?"] <- NA
+zygo$Homozygous <- (zygo$Genotype == "A/A" | zygo$Genotype == "T/T" | zygo$Genotype == "C/C" | zygo$Genotype == "G/G")
+```
+
+##Creates plots for maize and teosinte data based on SNP count per chromosome. Saves images to "Graphs" directory
 ```{r}
 ggplot(data = mMaize) + geom_bar(mapping = aes(x = mMaize$Chromosome)) + xlab(label = "Chromosome") + ylab(label = "Number of SNPs")
 ggsave(filename = "graphs/MaizeSNPs.png")
@@ -161,4 +168,20 @@ ggplot(data = mTeo) + geom_bar(mapping = aes(x = mTeo$Chromosome)) + xlab(label 
 ggsave(filename = "graphs/TeosinteSNPs.png")
 ```
 
-###I couldn't figure out the rest of the plotting
+##Homozygous vs Heterozygous sites plot for full dataset
+```{r}
+ggplot(data = zygo) + geom_bar(mapping = aes(x = Homozygous, fill = Homozygous)) + theme(legend.position = "none")
+ggsave(filename = "graphs/Zygosity_Counts_Full_Fang.png")
+```
+
+##Plot of zygosity by group
+```{r}
+ggplot(data = zygo) + geom_bar(mapping = aes(x = Group, fill = Homozygous), stat = "count") + theme(axis.text.x = element_text(size = 7))
+ggsave(filename = "graphs/Zygosity_by_group.png")
+```
+
+##Additional Visualization (Genotype distribution of SNPs by group)
+```{r}
+ggplot(data = zygo) + geom_bar(mapping = aes(x = Group, fill = Genotype), stat = "count")
+ggsave(filename = "graphs/Genotype_Dist_by_Group.png")
+```
